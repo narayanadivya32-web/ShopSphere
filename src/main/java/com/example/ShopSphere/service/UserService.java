@@ -9,5 +9,5 @@ public interface UserService {
 
 
 
-    void LoginUser(LoginRequest login);
+    String LoginUser(LoginRequest login);
 }

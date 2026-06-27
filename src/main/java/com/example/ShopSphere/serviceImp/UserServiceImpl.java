@@ -5,6 +5,7 @@ import com.example.ShopSphere.dto.RegisterRequest;
 import com.example.ShopSphere.entity.User;
 import com.example.ShopSphere.enums.Role;
 import com.example.ShopSphere.repository.UserRepository;
+import com.example.ShopSphere.security.JwtService;
 import com.example.ShopSphere.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,12 @@ private final UserRepository userRepository;
 
 private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository,PasswordEncoder passwordEncoder){
+private final JwtService jwtService;
+
+    public UserServiceImpl(UserRepository userRepository,PasswordEncoder passwordEncoder,JwtService jwtService){
         this.userRepository=userRepository;
         this.passwordEncoder=passwordEncoder;
+        this.jwtService=jwtService;
     }
 
     @Override
@@ -43,13 +47,15 @@ private final PasswordEncoder passwordEncoder;
         userRepository.save(user);
     }
 @Override
-public void LoginUser(LoginRequest login){
+public String LoginUser(LoginRequest login){
 
         User user=userRepository.findByEmail(login.getEmail()).orElseThrow(()->new RuntimeException("user not found"));
 
         if(!passwordEncoder.matches(login.getPassword(),user.getPassword())){
             throw new RuntimeException("Invalid Password");
         }
+
+        return jwtService.generateToken(user.getEmail());
 
     }
 
