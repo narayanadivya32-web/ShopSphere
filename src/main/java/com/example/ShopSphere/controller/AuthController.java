@@ -26,8 +26,8 @@ public class AuthController {
 
 @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequest login){
-        userService.LoginUser(login);
-        return ResponseEntity.ok("login successfull");
+       String token =  userService.LoginUser(login);
+        return ResponseEntity.ok(token);
 }
 
 

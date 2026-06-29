@@ -7,6 +7,8 @@ import com.example.ShopSphere.enums.Role;
 import com.example.ShopSphere.repository.UserRepository;
 import com.example.ShopSphere.security.JwtService;
 import com.example.ShopSphere.service.UserService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +22,13 @@ private final PasswordEncoder passwordEncoder;
 
 private final JwtService jwtService;
 
-    public UserServiceImpl(UserRepository userRepository,PasswordEncoder passwordEncoder,JwtService jwtService){
+private final AuthenticationManager authenticationManager;
+
+    public UserServiceImpl(UserRepository userRepository,PasswordEncoder passwordEncoder,JwtService jwtService, AuthenticationManager authenticationManager){
         this.userRepository=userRepository;
         this.passwordEncoder=passwordEncoder;
         this.jwtService=jwtService;
+        this.authenticationManager=authenticationManager;
     }
 
     @Override
@@ -48,15 +53,28 @@ private final JwtService jwtService;
     }
 @Override
 public String LoginUser(LoginRequest login){
-
-        User user=userRepository.findByEmail(login.getEmail()).orElseThrow(()->new RuntimeException("user not found"));
+// manual password verification
+      /*  User user=userRepository.findByEmail(login.getEmail()).orElseThrow(()->new RuntimeException("user not found"));
 
         if(!passwordEncoder.matches(login.getPassword(),user.getPassword())){
             throw new RuntimeException("Invalid Password");
         }
 
         return jwtService.generateToken(user.getEmail());
+*/
 
+    authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                    login.getEmail(),
+                    login.getPassword()
+            )
+
+    );
+
+    User user = userRepository.findByEmail(login.getEmail())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    return  jwtService.generateToken(user);
     }
 
 
